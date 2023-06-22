@@ -1,48 +1,83 @@
-import React, {useState} from "react";
+import React, { useState, useEffect } from "react";
 import TodoForm from "./TodoForm";
 import Todo from "./Todo";
+import axios from "axios";
 
-function TodoList(){
+function TodoList() {
+  const [todos, setTodos] = useState([]);
 
-    const [todos, setTodos] = useState([]);
-    const addTodo = todo => {
-        if(!todo.text || /^\s*$/.test(todo.text)){
-            return;
-        }
-        const newTodos = [todo, ...todos];
-        setTodos(newTodos);
-        console.log(todo,...todos);
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
+  const fetchTodos = async () => {
+    try {
+      const response = await axios.get("http://localhost:3001/todos");
+      setTodos(response.data);
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-    const removeTodo = id => {
-        const removeArr = [...todos].filter(todo => todo.id !== id);
-        setTodos(removeArr);
+  const addTodo = async (todo) => {
+    try {
+      const response = await axios.post("http://localhost:3001/todos", todo);
+      setTodos([...todos, response.data]);
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-    const updateTodo = (todoId, newValue) => {
-        if(!newValue.text || /^\s*$/.test(newValue.text)){
-            return;
-        }
-        setTodos(prev => prev.map(item => (item.id === todoId ? newValue : item)));
+  const removeTodo = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3001/todos/${id}`);
+      setTodos(todos.filter((todo) => todo.id !== id));
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-    const completeTodo = (id) => {
-        const updatedTodos = todos.map((todo) => {
-            if (todo.id === id) {
-                return { ...todo, isComplete: !todo.isComplete };
-            }
-            return todo;
-        });
-        setTodos(updatedTodos);
-    };
+  const updateTodo = async (todoId, newValue) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3001/todos/${todoId}`,
+        newValue
+      );
+      setTodos(
+        todos.map((todo) => (todo.id === todoId ? response.data : todo))
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-    return(
-        <div>
-            <h1>What's the plan for today?</h1>
-            <TodoForm  onSubmit={addTodo} />
-            <Todo todos={todos} completedTodo={completeTodo} removeTodo={removeTodo} updateTodo={updateTodo} />
-        </div>
-    )
+  const completeTodo = async (id) => {
+    try {
+      const response = await axios.put(`http://localhost:3001/todos/${id}`, {
+        ...todos.find((todo) => todo.id === id),
+        isComplete: !todos.find((todo) => todo.id === id).isComplete,
+      });
+      setTodos(
+        todos.map((todo) =>
+          todo.id === id ? { ...response.data } : { ...todo }
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <div>
+      <h1>What's the plan for today?</h1>
+      <TodoForm onSubmit={addTodo} />
+      <Todo
+        todos={todos}
+        completedTodo={completeTodo}
+        removeTodo={removeTodo}
+        updateTodo={updateTodo}
+      />
+    </div>
+  );
 }
-
 export default TodoList;
