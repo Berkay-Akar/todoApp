@@ -21,8 +21,7 @@ function TodoList() {
 
   const addTodo = async (todo) => {
     try {
-      const response = await axios.post("http://localhost:3001/todos", todo);
-      setTodos([...todos, response.data]);
+      setTodos([...todos, todo]);
     } catch (err) {
       console.log(err);
     }
@@ -51,21 +50,27 @@ function TodoList() {
     }
   };
 
-  const completeTodo = async (id) => {
-    try {
-      const response = await axios.put(`http://localhost:3001/todos/${id}`, {
-        ...todos.find((todo) => todo.id === id),
-        isComplete: !todos.find((todo) => todo.id === id).isComplete,
-      });
-      setTodos(
-        todos.map((todo) =>
-          todo.id === id ? { ...response.data } : { ...todo }
-        )
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // const completeTodo = async (id) => {
+  //   try {
+  //     const todoToUpdate = todos.find((todo) => todo.id === id);
+  //     const updatedTodo = {
+  //       ...todoToUpdate,
+  //       isComplete: !todoToUpdate.isComplete,
+  //     };
+  //     const response = await axios.put(
+  //       `http://localhost:3001/todos/${id}`,
+  //       updatedTodo
+  //     );
+
+  //     setTodos(
+  //       todos.map((todo) =>
+  //         todo.id === id ? { ...response.data } : { ...todo }
+  //       )
+  //     );
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   return (
     <div>
@@ -73,7 +78,7 @@ function TodoList() {
       <TodoForm onSubmit={addTodo} />
       <Todo
         todos={todos}
-        completedTodo={completeTodo}
+        //completedTodo={completeTodo}
         removeTodo={removeTodo}
         updateTodo={updateTodo}
       />
